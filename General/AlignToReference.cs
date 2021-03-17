@@ -1,4 +1,13 @@
-﻿using Sirenix.OdinInspector;
+﻿/**
+ *	Common Utilities Library for developing in Unity.
+ *	https://github.com/seahyx/Unity-CommonUtils
+ *
+ *	MIT License
+ *
+ *	Copyright (c) 2021 Seah Ying Xiang
+ */
+
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace CommonUtils
