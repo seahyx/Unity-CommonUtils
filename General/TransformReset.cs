@@ -19,12 +19,11 @@ namespace CommonUtils
 	/// </summary>
 	public class TransformReset : MonoBehaviour
 	{
-
 		#region Serialization
 
 		[Title("Configuration")]
 
-		[ToolTip("Target transform. Leave empty to reference the transform on this GameObject.")]
+		[Tooltip("Target transform. Leave empty to reference the transform on this GameObject.")]
 		[SerializeField]
 		private Transform target;
 
