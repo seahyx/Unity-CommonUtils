@@ -8,4 +8,4 @@ Some scripts include networking code that uses Photon's PUN.
 
 ## License
 
-// To be updated
+MIT License
