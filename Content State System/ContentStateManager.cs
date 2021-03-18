@@ -122,7 +122,7 @@ namespace CommonUtils.ContentState
 		public void GoHome(bool reset = true)
 		{
 			if (reset)
-				Reset(defaultContentStateIndex)
+				Reset(defaultContentStateIndex);
 			else
 				SetState(defaultContentStateIndex);
 		}
