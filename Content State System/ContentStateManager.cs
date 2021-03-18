@@ -119,9 +119,12 @@ namespace CommonUtils.ContentState
 		/// <summary>
 		/// Goes back to the home state. Does not reset the current stack.
 		/// </summary>
-		public void GoHome()
+		public void GoHome(bool reset = true)
 		{
-			SetState(defaultContentStateIndex);
+			if (reset)
+				Reset(defaultContentStateIndex)
+			else
+				SetState(defaultContentStateIndex);
 		}
 
 		/// <summary>
