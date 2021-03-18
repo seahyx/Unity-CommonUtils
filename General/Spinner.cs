@@ -80,6 +80,15 @@ namespace CommonUtils
 		#region MonoBehaviour
 
 		/// <summary>
+		/// Update target if null.
+		/// </summary>
+		private void Awake()
+		{
+			if (!target)
+				target = gameObject;
+		}
+
+		/// <summary>
 		/// Spinning here!
 		/// </summary>
 		private void Update()
@@ -101,18 +110,12 @@ namespace CommonUtils
 					if (!clockwise)
 						speed *= -1;
 
-					if (!target)
-						target = gameObject;
-
 					// Rotate object
 					target.transform.Rotate(new Vector3(0.0f, speed));
 				}
 				else
 				{
 					// Spun up already
-
-					if (!target)
-						target = gameObject;
 
 					// Rotate object
 					target.transform.Rotate(new Vector3(0.0f, spinSpeed * Time.deltaTime));
@@ -131,14 +134,11 @@ namespace CommonUtils
 					if (!clockwise)
 						speed *= -1;
 
-					if (!target)
-						target = gameObject;
-
 					// Rotate object
 					target.transform.Rotate(new Vector3(0.0f, speed));
 				}
 			}
-			
+
 		}
 
 		#endregion
