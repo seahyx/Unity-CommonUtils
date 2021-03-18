@@ -1,4 +1,13 @@
-﻿using System.Collections;
+﻿/**
+ *	Common Utilities Library for developing in Unity.
+ *	https://github.com/seahyx/Unity-CommonUtils
+ *
+ *	MIT License
+ *
+ *	Copyright (c) 2021 Seah Ying Xiang
+ */
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
