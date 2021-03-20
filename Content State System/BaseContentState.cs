@@ -32,9 +32,17 @@ namespace CommonUtils.ContentState
 
 		[Header("Base Content State Settings")]
 
+		[Tooltip("Gets invoked when the content state has started its in transition.")]
+		[SerializeField]
+		public UnityEvent OnTransitionInStarted = new UnityEvent();
+
 		[Tooltip("Gets invoked when the content state has finished its in transition.")]
 		[SerializeField]
 		public UnityEvent OnTransitionInCompleted = new UnityEvent();
+
+		[Tooltip("Gets invoked when the content state has started its out transition.")]
+		[SerializeField]
+		public UnityEvent OnTransitionOutStarted = new UnityEvent();
 
 		[Tooltip("Gets invoked when the content state has finished its out transition.")]
 		[SerializeField]
@@ -79,6 +87,8 @@ namespace CommonUtils.ContentState
 
 			Debug.Log($"[{name}] Starting out transition of {name}.");
 
+			OnTransitionOutStarted?.Invoke();
+
 			StartCoroutine(transitionEnumerator);
 		}
 
@@ -99,6 +109,8 @@ namespace CommonUtils.ContentState
 			IsTransitioning = true;
 
 			Debug.Log($"[{name}] Starting in transition of {name}.");
+
+			OnTransitionInStarted?.Invoke();
 
 			StartCoroutine(transitionEnumerator);
 		}
