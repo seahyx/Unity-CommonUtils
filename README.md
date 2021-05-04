@@ -14,10 +14,6 @@ Contains the base networking class that some network-enabled scripts will use.
 
 Includes `NetworkMonoBehaviour`, a useful modified version of the `MonoBehaviour` to make implementing synchronised networking features easy.
 
-### Content Anchor System
-
-A modified version of the HelloHolo Online Framework's crystal anchor. **Work-in-progress**.
-
 ### Content State System
 
 A simple content state management system for scene-like transitions and flow. When you don't need something complex.
