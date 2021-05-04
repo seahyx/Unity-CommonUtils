@@ -10,7 +10,7 @@ Most scripts are plug and play, just drop them in and they should work. ;-)
 
 - ### _Core
 
-	- Contains the base networking class that some network-enabled scripts will use.
+  - Contains the base networking class that some network-enabled scripts will use.
 	- Includes `NetworkMonoBehaviour`, a useful modified version of the `MonoBehaviour` to make implementing synchronised networking features easy.
 
 - ### Content State System
@@ -50,7 +50,7 @@ Some scripts require Odin Serializer for the inspector tools.
 
 Some scripts require Photon for networking capabilities.
 
-## Bug-reporting
+## Bug Reporting
 
 Please report any bugs to the issue tracker. Any code contributions will be welcome! :DD
 
