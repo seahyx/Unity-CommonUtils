@@ -7,19 +7,18 @@
  *	Copyright (c) 2021 Seah Ying Xiang
  */
 
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace CommonUtils
 {
 	/// <summary>
-	/// Aligns the GameObject this script is attached to, to the height of a reference GameObject on OnEnable.
+	/// Aligns the <see cref="GameObject"/> this script is attached to, to the height of a reference <see cref="GameObject"/> on <see cref="OnEnable"/>.
 	/// </summary>
 	public class AlignToReference : MonoBehaviour
 	{
 		#region Serialization
 
-		[Title("Configuration")]
+		[Header("Configuration")]
 
 		[Tooltip("Target to adjust alignment. Leave empty to reference this GameObject.")]
 		[SerializeField]
@@ -53,7 +52,7 @@ namespace CommonUtils
 
 			// Disable after use if enabled
 			if (singleUse)
-				gameObject.GetComponent<AlignToReference>().enabled = false;
+				enabled = false;
 		}
 
 		#endregion

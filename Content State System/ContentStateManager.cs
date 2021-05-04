@@ -7,19 +7,21 @@
  *	Copyright (c) 2021 Seah Ying Xiang
  */
 
-using ExitGames.Client.Photon;
+using CommonUtils.Networking;
 using Photon.Pun;
-using Sirenix.OdinInspector;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using CommonUtils.Core.Networking;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 namespace CommonUtils.ContentState
 {
 	/// <summary>
-	/// Manages the state of the content and flow.
-	/// Multiplayer-enabled using Photon.
+	/// Simple content state management system.
+	/// Multiplayer-enabled using <see cref="NetworkMonoBehaviour"/>.
 	/// </summary>
-	public class ContentStateManager : MonoBehaviour
+	public class ContentStateManager : NetworkMonoBehaviour
 	{
 		#region Serialization
 
@@ -27,7 +29,7 @@ namespace CommonUtils.ContentState
 
 		[Tooltip("List of content states.")]
 		[SerializeField]
-		private List<BaseContentState> contentStates;
+		private List<BaseContentState> contentStates = new List<BaseContentState>();
 
 		[Tooltip("Index of the default content state in the list.")]
 		[PropertyRange(0, "maxStateIndex")]
@@ -44,42 +46,40 @@ namespace CommonUtils.ContentState
 		private Stack<BaseContentState> stack { get; set; } = new Stack<BaseContentState>();
 
 		/// <summary>
-		/// The maximum index of contentStates, or, if contentStates is null, 0
+		/// The maximum index of <see cref="contentStates"/>, or, if <see cref="contentStates"/> is null, 0
 		/// </summary>
 		private int maxStateIndex => contentStates?.Count - 1 ?? 0;
 
 		/// <summary>
-		/// Field for currentStateIndex.
+		/// Currently active content state index.
+		/// This value is changed the moment before the content state is stating its out transition.
+		/// Also used for network synchronization.
 		/// </summary>
-		private int _currentStateIndex = 0;
+		public int CurrentStateIndex { get; private set; }
+
+		#region Constants
 
 		/// <summary>
-		/// Currently active content state index. This value is changed the moment before the content state is stating its out transition. Used for network synchronization.
+		/// Network property keys.
 		/// </summary>
-		private int currentStateIndex
+		private struct NetworkProperty
 		{
-			get => _currentStateIndex;
-			set
-			{
-				_currentStateIndex = value;
-				UpdateNetworkStateIndex(value);
-			}
+			public const string CONTENT_STATE_INDEX = "ContentStateIndex";
 		}
-
-		/// <summary>
-		/// String key for the room property of the currently active content state.
-		/// </summary>
-		private const string CURRENT_CONTENT_STATE_INDEX_RPKEY = "ContentStateManager_CurrentContentState";
 
 		#endregion
 
-		#region Monobehaviour
+		#endregion
+
+		#region MonoBehaviour
 
 		/// <summary>
 		/// Error checking.
 		/// </summary>
-		private void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
+
 			Debug.Assert(contentStates?.Count > 0, "Content state list cannot be empty!");
 
 			foreach (BaseContentState contentState in contentStates)
@@ -91,25 +91,34 @@ namespace CommonUtils.ContentState
 		/// </summary>
 		private void OnEnable()
 		{
-			// Reset the stack every time content is loaded.
-			stack = new Stack<BaseContentState>();
-
-			// If there are no network updates, reset to default index
-			if (!UpdateFromNetworkStateIndex())
+			if (PhotonNetwork.InRoom)
+			{
+				// Check update from the current state of the room properties
+				if (!ParsePropertyTable(PhotonNetwork.CurrentRoom.CustomProperties))
+				{
+					// There are no network room property values, so we need to initialize
+					// But we don't want to send updates, thus isNetwork is true
+					Reset(defaultContentStateIndex, isNetwork: true);
+				}
+			}
+			else
+			{
+				// Initialize content stack
 				Reset(defaultContentStateIndex);
+			}
 		}
 
 		#endregion
 
-		#region Unity Events
+		#region Public Events
 
 		/// <summary>
-		/// Unity Event for sequential SetState()
+		/// Invokes sequential <see cref="SetState(int, bool, bool)"/> with <paramref name="index"/>.
 		/// </summary>
-		/// <param name="index">Index of the the ContentState in the ContentState list.</param>
+		/// <param name="index">Target index of the the <see cref="BaseContentState"/> in <see cref="contentStates"/>.</param>
 		public void SetStateSequential(int index)
 		{
-			SetState(index, true);
+			SetState(index, sequential: true);
 		}
 
 		#endregion
@@ -146,14 +155,14 @@ namespace CommonUtils.ContentState
 			}
 
 			// Update current content state
-			currentStateIndex = contentStates.IndexOf(stack.Peek());
+			CurrentStateIndex = contentStates.IndexOf(stack.Peek());
 
 			// Begin transitions
 			stack.Peek().TransitionOut(() =>
 			{
 				// Remove current content state
 				stack.Pop();
-				
+
 				// Transition in the new state
 				stack.Peek().TransitionIn();
 			});
@@ -163,10 +172,10 @@ namespace CommonUtils.ContentState
 		/// Start the transition to another state.
 		/// Will not execute if the current state is still in transition, unless forced is true.
 		/// </summary>
-		/// <param name="index">Index of the the ContentState in the ContentState list.</param>
+		/// <param name="index">Index of the the <see cref="BaseContentState"/> in <see cref="contentStates"/>.</param>
 		/// <param name="sequential">Whether the transitions are executed sequentially or in parallel.</param>
 		/// <param name="forced">Whether to force the transition to happen, if the current state is still in a transition.</param>
-		public void SetState(int index, bool sequential = true, bool forced = false)
+		public void SetState(int index, bool sequential = true, bool forced = false, bool isNetwork = false)
 		{
 			// Catch errors
 			if (index < 0 || index >= contentStates.Count)
@@ -175,10 +184,24 @@ namespace CommonUtils.ContentState
 				return;
 			}
 
+			// Reset if stack is empty
+			if (stack?.Count == 0)
+			{
+				Debug.Log($"[{name}] Content state stack is empty, initializing it with index {index}.");
+				Reset(index);
+			}
+
+			// Skip if index is the same
+			if (CurrentStateIndex == index)
+			{
+				Debug.Log($"[{name}] SetState() was called with an index the same as the current index, thus will be ignored.");
+				return;
+			}
+
 			// Check if there is a transition still in progress
 			if (stack.Peek().IsTransitioning)
 			{
-				if (forced)
+				if (forced || isNetwork)
 				{
 					Debug.LogWarning($"[{name}] Current state is still in transition, forcing transition to another state.");
 				}
@@ -190,7 +213,11 @@ namespace CommonUtils.ContentState
 			}
 
 			// Update current content state
-			currentStateIndex = index;
+			CurrentStateIndex = index;
+
+			// Update network
+			if (!isNetwork)
+				SendContentStateNetworkUpdate(CurrentStateIndex);
 
 			if (sequential)
 			{
@@ -224,7 +251,7 @@ namespace CommonUtils.ContentState
 		/// <summary>
 		/// Disables all other states, reset the stack, and return to selected index.
 		/// </summary>
-		public void Reset(int index)
+		public void Reset(int index, bool isNetwork = false)
 		{
 			foreach (BaseContentState state in contentStates)
 				state.gameObject.SetActive(false);
@@ -234,59 +261,38 @@ namespace CommonUtils.ContentState
 			stack.Peek().gameObject.SetActive(true);
 			stack.Peek().TransitionIn();
 
-			currentStateIndex = index;
+			CurrentStateIndex = index;
+
+			// Update network
+			if (!isNetwork)
+				SendContentStateNetworkUpdate(CurrentStateIndex);
 		}
 
 		#endregion
 
-		#region Networking Functions
+		#region Networking
 
 		/// <summary>
-		/// Updates current state index on the network if connected.
+		/// Updates <see cref="CurrentStateIndex"/> on the network if connected.
 		/// </summary>
 		/// <param name="index">Current content state index.</param>
-		private void UpdateNetworkStateIndex(int index)
+		private void SendContentStateNetworkUpdate(int index)
 		{
-			// Only the host shall update when in networked mode
-			if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
-			{
-				// Update network
-				Hashtable hashtable = new Hashtable();
-				hashtable.Add(CURRENT_CONTENT_STATE_INDEX_RPKEY, index);
-				PhotonNetwork.CurrentRoom.SetCustomProperties(hashtable);
-			}
+			SendPropertyUpdate(NetworkProperty.CONTENT_STATE_INDEX, index);
 		}
 
-		/// <summary>
-		/// Updates current state index from the network if connected.
-		/// </summary>
-		/// <returns>Whether the current state index was updated from the network.</returns>
-		private bool UpdateFromNetworkStateIndex()
+		protected override void OnReceivePropertyUpdate(string propertyName, object value)
 		{
-			bool hasNetworkUpdate = false;
-
-			// Only the host shall update when in networked mode
-			if (PhotonNetwork.InRoom)
+			switch (propertyName)
 			{
-				// Iterate through the changes in the room properties
-				foreach (System.Collections.DictionaryEntry property in PhotonNetwork.CurrentRoom.CustomProperties)
-				{
+				case NetworkProperty.CONTENT_STATE_INDEX:
+					// Get index
+					int index = (int)value;
+
 					// Update content state
-
-					// Check if whether the property key is the content state index key 
-					if ((string)property.Key == CURRENT_CONTENT_STATE_INDEX_RPKEY)
-					{
-						if (currentStateIndex != (int)property.Value)
-						{
-							currentStateIndex = (int)property.Value;
-							Reset(currentStateIndex);
-							hasNetworkUpdate = true;
-						}
-					}
-				}
+					SetState(index, isNetwork: true);
+					break;
 			}
-
-			return hasNetworkUpdate;
 		}
 
 		#endregion

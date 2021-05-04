@@ -15,7 +15,7 @@ using UnityEngine;
 namespace CommonUtils.Save
 {
 	/// <summary>
-	/// Contains all values for a save data.
+	/// Contains all values for a save.
 	/// </summary>
 	[Serializable]
 	public class SaveData

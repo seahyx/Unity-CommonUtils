@@ -11,6 +11,9 @@ using UnityEngine;
 
 namespace CommonUtils.ContentState
 {
+	/// <summary>
+	/// Inheritable content state class with preset serialized fields for animation settings.
+	/// </summary>
 	public class BaseAnimatedContentState : BaseContentState
 	{
 		#region Serialization

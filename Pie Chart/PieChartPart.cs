@@ -15,15 +15,18 @@ using TMPro;
 namespace CommonUtils.PieChart
 {
 	/// <summary>
+	/// <para>
 	/// Generates the meshes for the pie chart.
-	/// It is to be instantiated by PieChartController.
+	/// It is to be instantiated by <see cref="PieChartController"/>.
 	/// The mesh generated will start at the 12 o'clock direction, facing the forward z direction.
 	/// The pivot point will be at the middle vertex of the mesh, at the bottom of the pie.
 	/// It is to be then rotated by the controller into the right spot.
-	/// 
+	/// </para>
+	/// <para>
 	/// The mesh generator works by generating two center pivot points, then generates the rest of the points around a predefined radius from the center.
 	/// The two end faces will be filled, even if the mesh is a full cylinder.
 	/// The mesh will only generate a vertex point every degree, until the last segment, in which it will generate based on the fraction of the degree.
+	/// </para>
 	/// </summary>
 	[RequireComponent(typeof(MeshFilter))]
 	[RequireComponent(typeof(MaterialInstance))]
@@ -65,7 +68,7 @@ namespace CommonUtils.PieChart
 		#region Member Declarations
 
 		/// <summary>
-		/// Title of this part.
+		/// Title of this pie part.
 		/// </summary>
 		public string Name { get; set; }
 
@@ -114,12 +117,12 @@ namespace CommonUtils.PieChart
 		}
 
 		/// <summary>
-		/// MeshFilter reference on this object.
+		/// <see cref="MeshFilter"/> reference on this object.
 		/// </summary>
 		private MeshFilter meshFilter { get; set; }
 
 		/// <summary>
-		/// MeshRenderer reference on this object.
+		/// <see cref="MaterialInstance"/> reference on this object.
 		/// </summary>
 		private MaterialInstance materialInstance { get; set; }
 

@@ -13,27 +13,35 @@ using UnityEngine;
 namespace CommonUtils.Debugging
 {
 	/// <summary>
-	/// Tool to display the console log into a TMP component.
+	/// Tool to display the console log into a <see cref="TextMeshPro"/> component.
 	/// </summary>
 	public class DebugLog : MonoBehaviour
 	{
+		#region Member Declarations
 
 		/// <summary>
-		/// Log string.
+		/// Log <see langword="string"/>.
 		/// </summary>
-		static string myLog = "";
+		static string myLog { get; set; } = "";
 
 		/// <summary>
 		/// Stack trace.
 		/// </summary>
-		private string stack;
+		private string stack { get; set; }
 
 		/// <summary>
-		/// Output string.
+		/// Output <see langword="string"/>.
 		/// </summary>
-		private string output;
+		private string output { get; set; }
 
-		private TextMeshPro tmp;
+		/// <summary>
+		/// <see cref="TextMeshPro"/> reference.
+		/// </summary>
+		private TextMeshPro tmp { get; set; }
+
+		#endregion
+
+		#region MonoBehaviour
 
 		/// <summary>
 		/// Register logging callback to event.
@@ -52,12 +60,16 @@ namespace CommonUtils.Debugging
 			Application.logMessageReceived -= Log;
 		}
 
+		#endregion
+
+		#region Public Functions
+
 		/// <summary>
-		/// Log output to a TMP component.
+		/// Logs output to a TMP component.
 		/// </summary>
-		/// <param name="logString"></param>
-		/// <param name="stackTrace"></param>
-		/// <param name="type"></param>
+		/// <param name="logString">Log string.</param>
+		/// <param name="stackTrace">Stack trace.</param>
+		/// <param name="type">Log level.</param>
 		public void Log(string logString, string stackTrace, LogType type)
 		{
 			output = logString;
@@ -66,6 +78,8 @@ namespace CommonUtils.Debugging
 
 			tmp.text = myLog;
 		}
+
+		#endregion
 	}
 
 }

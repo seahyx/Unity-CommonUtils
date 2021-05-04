@@ -15,7 +15,7 @@ namespace CommonUtils.ContentState
 {
 
 	/// <summary>
-	/// Base class for a state of the content.
+	/// Base class for a section of content.
 	/// </summary>
 	public class BaseContentState : MonoBehaviour
 	{
@@ -53,8 +53,8 @@ namespace CommonUtils.ContentState
 		#region Member Declarations
 
 		/// <summary>
-		/// The content state manager this content state is being handled by.
-		/// Reference is assigned by the content state manager.
+		/// The <see cref="ContentStateManager"/> this <see cref="BaseContentState"/> is being handled by.
+		/// Reference is assigned by the <see cref="ContentStateManager"/>.
 		/// </summary>
 		public ContentStateManager ContentStateManager { get; set; }
 
@@ -64,7 +64,7 @@ namespace CommonUtils.ContentState
 		public bool IsTransitioning { get; private set; } = false;
 
 		/// <summary>
-		/// The reference for the transition enumerator, if any.
+		/// The reference for the transition <see cref="IEnumerator"/>, if any.
 		/// </summary>
 		private IEnumerator transitionEnumerator { get; set; }
 
@@ -73,7 +73,7 @@ namespace CommonUtils.ContentState
 		#region Content State Functions
 
 		/// <summary>
-		/// This function will begin the out transition for this state.
+		/// This function will begin the exit transition for this state.
 		/// It will not stop any running transitions, but it will log a warning if another transition is active.
 		/// </summary>
 		/// <param name="onTransitionCompleted">Callback to be executed when transition is complete.</param>
@@ -93,7 +93,7 @@ namespace CommonUtils.ContentState
 		}
 
 		/// <summary>
-		/// This function will begin the in transition for this state.
+		/// This function will begin the entrance transition for this state.
 		/// It will not stop any running transitions, but it will log a warning if another transition is active.
 		/// </summary>
 		/// <param name="onTransitionCompleted">Callback to be executed when transition is complete.</param>
@@ -116,9 +116,10 @@ namespace CommonUtils.ContentState
 		}
 
 		/// <summary>
+		/// <para>
 		/// This function is called whenever the app is switching from this state to another.
 		/// Base function must be called at the end of the override.
-		/// <br></br><br></br>
+		/// </para>
 		/// <example>At the end of the override function, call this:
 		/// <code>
 		/// yield return StartCoroutine(base.AnimateTransitionOut(onTransitionCompleted));
@@ -126,7 +127,7 @@ namespace CommonUtils.ContentState
 		/// </example>
 		/// </summary>
 		/// <param name="onTransitionCompleted">Callback to be executed when transition is complete.</param>
-		/// <returns></returns>
+		/// <returns>Animation <see cref="IEnumerator"/>.</returns>
 		protected virtual IEnumerator AnimateTransitionOut(OnTransitionCompleted onTransitionCompleted)
 		{
 			// Set transition flag
@@ -145,9 +146,10 @@ namespace CommonUtils.ContentState
 		}
 
 		/// <summary>
+		/// <para>
 		/// This function is called whenever the app is switching from another state to this.
 		/// Base function must be called at the end of the override.
-		/// <br></br><br></br>
+		/// </para>
 		/// <example>At the end of the override function, call this:
 		/// <code>
 		/// yield return StartCoroutine(base.AnimateTransitionIn(onTransitionCompleted));
@@ -155,7 +157,7 @@ namespace CommonUtils.ContentState
 		/// </example>
 		/// </summary>
 		/// <param name="onTransitionCompleted">Callback to be executed when transition is complete.</param>
-		/// <returns></returns>
+		/// <returns>Animation <see cref="IEnumerator"/>.</returns>
 		protected virtual IEnumerator AnimateTransitionIn(OnTransitionCompleted onTransitionCompleted)
 		{
 			// Set transition flag

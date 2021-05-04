@@ -30,7 +30,7 @@ namespace CommonUtils.PieChart
 
 	/// <summary>
 	/// Draws a 3D pie chart with labels.
-	/// This class will spawn PieChartParts which will create the meshes for the different slices of the pie.
+	/// This class will spawn <see cref="PieChartPart"/>s which will create the meshes for the different slices of the pie.
 	/// </summary>
 	public class PieChartController : MonoBehaviour
 	{
@@ -94,7 +94,7 @@ namespace CommonUtils.PieChart
 		#region Member Definitions
 
 		/// <summary>
-		/// List of generated PieChartPart object references on this object.
+		/// List of generated <see cref="PieChartPart"/> object references.
 		/// </summary>
 		private List<PieChartPart> pieParts { get; set; } = new List<PieChartPart>();
 

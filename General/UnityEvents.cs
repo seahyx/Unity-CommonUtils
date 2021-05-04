@@ -16,19 +16,19 @@ using UnityEngine.Events;
 namespace CommonUtils
 {
 	/// <summary>
-	/// Unity Event with a single boolean argument.
+	/// Unity Event with a single <see cref="bool"/> argument.
 	/// </summary>
 	[System.Serializable]
 	public class UnityBooleanEvent : UnityEvent<bool> { }
 
 	/// <summary>
-	/// Unity Event with a single string argument.
+	/// Unity Event with a single <see cref="string"/> argument.
 	/// </summary>
 	[System.Serializable]
 	public class UnityStringEvent : UnityEvent<string> { }
 
 	/// <summary>
-	/// Unity Event with an int and boolean argument.
+	/// Unity Event with an <see cref="string"/> and <see cref="bool"/> argument.
 	/// </summary>
 	[System.Serializable]
 	public class UnityStringBooleanEvent : UnityEvent<string, bool> { }

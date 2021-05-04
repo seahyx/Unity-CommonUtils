@@ -15,7 +15,7 @@ using UnityEngine;
 namespace CommonUtils
 {
 	/// <summary>
-	/// Scales the model with interpolation. Scales all axis equally.
+	/// Scales the model with smooth interpolation. Scales all axis equally.
 	/// </summary>
 	public class ModelScaler : MonoBehaviour
 	{
@@ -44,7 +44,7 @@ namespace CommonUtils
 		#region Member Declarations
 
 		/// <summary>
-		/// Currently running animation curve.
+		/// Currently running <see cref="AnimationCurve"/>.
 		/// </summary>
 		private AnimationCurve currentAnimCurve { get; set; }
 
@@ -84,7 +84,7 @@ namespace CommonUtils
 		}
 
 		/// <summary>
-		/// Scale animation.
+		/// Update scaling animation (if any).
 		/// </summary>
 		private void Update()
 		{
@@ -117,7 +117,7 @@ namespace CommonUtils
 		#region Public Functions
 
 		/// <summary>
-		/// Sets the model to scale to this value.
+		/// Start the animation or update an existing animation to scale to <paramref name="scale"/>.
 		/// </summary>
 		/// <param name="scale">Model scale value for x, y, and z.</param>
 		public void SetScale(float scale)
@@ -153,22 +153,22 @@ namespace CommonUtils
 		#region Helper Functions
 
 		/// <summary>
-		/// Generates an animation curve when none is running.
+		/// Generates an <see cref="AnimationCurve"/> when none is running.
 		/// </summary>
 		/// <param name="startValue">Starting animation value.</param>
 		/// <param name="finalValue">Final target value.</param>
-		/// <returns></returns>
+		/// <returns>Ease-in-out animation curve./></returns>
 		private AnimationCurve GenerateAnimCurve(float startValue, float finalValue)
 		{
 			return AnimationCurve.EaseInOut(0.0f, startValue, animDuration, finalValue);
 		}
 
 		/// <summary>
-		/// Recalculates the animation curve, extending it based on the current position of the animation.
+		/// Recalculates the <see cref="currentAnimCurve"/>, extending it based on the current position and velocity of the animation.
 		/// </summary>
-		/// <param name="animCurve">AnimationCurve to recalculate.</param>
+		/// <param name="animCurve">The <see cref="AnimationCurve"/> to recalculate.</param>
 		/// <param name="timer">Current time on the animation.</param>
-		/// <param name="finalValue">Next target value.</param>
+		/// <param name="finalValue">Next target scale value.</param>
 		private void RecalculateAnimCurve(AnimationCurve animCurve, float timer, float finalValue)
 		{
 			// Get current value of the animation

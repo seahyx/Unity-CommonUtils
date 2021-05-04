@@ -13,7 +13,7 @@ using UnityEngine;
 namespace CommonUtils
 {
 	/// <summary>
-	/// Spins an object.
+	/// Spins an object, with configurable acceleration/deceleration and spinning speed.
 	/// </summary>
 	public class Spinner : MonoBehaviour
 	{
@@ -35,9 +35,9 @@ namespace CommonUtils
 		[SerializeField]
 		private float spinSpeed = 40.0f;
 
-		[Tooltip("Spin direction.")]
+		[Tooltip("Local spin axis. The object will spin around this vector. This vector will be normalized.")]
 		[SerializeField]
-		private bool clockwise = true;
+		private Vector3 spinAxis = Vector3.up;
 
 		[Tooltip("Spin up duration.")]
 		[SerializeField]
@@ -47,14 +47,12 @@ namespace CommonUtils
 		[SerializeField]
 		private AnimationCurve spinUpCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
 
-		public string testString { get; set; }
-
 		#endregion
 
 		#region Member Declarations
 
 		/// <summary>
-		/// Determines how much the object has spun up. [0..1]
+		/// Determines how much the object has spun up. <c>[0..1]</c>
 		/// </summary>
 		private float spinUpFactor
 		{
@@ -62,12 +60,12 @@ namespace CommonUtils
 		}
 
 		/// <summary>
-		/// Property for spinUpTimer.
+		/// Field for <see cref="spinUpTimer"/>.
 		/// </summary>
 		private float _spinUpTimer = 0.0f;
 
 		/// <summary>
-		/// Timer for the spin up animation. Clamped between 0 and spinUpDur.
+		/// Timer for the spin up animation. Clamped between <c>0</c> and <see cref="spinUpDur"/>.
 		/// </summary>
 		private float spinUpTimer
 		{
@@ -75,12 +73,22 @@ namespace CommonUtils
 			set => _spinUpTimer = Mathf.Clamp(value, 0.0f, spinUpDur);
 		}
 
+		/// <summary>
+		/// Time-adjusted current speed of the spin.
+		/// </summary>
+		private float speed => spinSpeed * spinUpFactor * Time.deltaTime;
+
+		/// <summary>
+		/// Normalized spin vector, from value <see cref="spinAxis"/>.
+		/// </summary>
+		private Vector3 nSpinAxis => Vector3.Normalize(spinAxis);
+
 		#endregion
 
 		#region MonoBehaviour
 
 		/// <summary>
-		/// Update target if null.
+		/// Set <see cref="target"/> to this <see cref="GameObject"/> if <see langword="null"/>.
 		/// </summary>
 		private void Awake()
 		{
@@ -105,20 +113,15 @@ namespace CommonUtils
 					// Update timer
 					spinUpTimer += Time.deltaTime;
 
-					// Find current rotation speed
-					float speed = spinSpeed * spinUpFactor * Time.deltaTime;
-					if (!clockwise)
-						speed *= -1;
-
 					// Rotate object
-					target.transform.Rotate(new Vector3(0.0f, speed));
+					target.transform.localRotation *= Quaternion.AngleAxis(speed, nSpinAxis);
 				}
 				else
 				{
 					// Spun up already
 
 					// Rotate object
-					target.transform.Rotate(new Vector3(0.0f, spinSpeed * Time.deltaTime));
+					target.transform.localRotation *= Quaternion.AngleAxis(spinSpeed * Time.deltaTime, nSpinAxis);
 				}
 			}
 			else
@@ -129,13 +132,8 @@ namespace CommonUtils
 					// Update timer
 					spinUpTimer -= Time.deltaTime;
 
-					// Find current rotation speed
-					float speed = spinSpeed * spinUpFactor * Time.deltaTime;
-					if (!clockwise)
-						speed *= -1;
-
 					// Rotate object
-					target.transform.Rotate(new Vector3(0.0f, speed));
+					target.transform.localRotation *= Quaternion.AngleAxis(speed, nSpinAxis);
 				}
 			}
 
@@ -164,9 +162,9 @@ namespace CommonUtils
 		}
 
 		/// <summary>
-		/// Toggles spin with a bool value.
+		/// Toggles spinning with a <see langword="bool"/> value.
 		/// </summary>
-		/// <param name="isSpinning">Spin or not.</param>
+		/// <param name="isSpinning">To spin or not to spin.</param>
 		public void SetSpin(bool isSpinning)
 		{
 			if (isSpinning)

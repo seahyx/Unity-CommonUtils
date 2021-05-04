@@ -14,7 +14,6 @@ using UnityEngine;
 
 namespace CommonUtils.Save
 {
-
 	/// <summary>
 	/// Save data manager.
 	/// </summary>
@@ -34,7 +33,7 @@ namespace CommonUtils.Save
 
 		#endregion
 
-		#region SaveData Functions
+		#region Public Functions
 
 		/// <summary>
 		/// Saves data to a persistent json file.

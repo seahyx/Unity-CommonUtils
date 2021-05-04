@@ -10,16 +10,22 @@
 using Sirenix.OdinInspector;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace CommonUtils
 {
 	/// <summary>
-	/// Keeps the transform's position, rotation, and scale in memory so it can be reset back to the original state whenever.
-	/// It also animates the transition.
+	/// Saves the target's original position, rotation, and scale on <see cref="Awake"/>.
+	/// <br></br>
+	/// When <see cref="ResetTransform"/> is called, <see cref="ResetAnimation"/> will move the target back to the original position, rotation, and scale.
 	/// </summary>
 	public class TransformReset : MonoBehaviour
 	{
 		#region Serialization
+
+		[InfoBox("Saves the target's original position, rotation, and scale on Awake. When ResetTransform() is called, reset animation will move the target back to the original position, rotation, and scale.\n\n" +
+			"Leave target empty to reference the transform on this GameObject.")]
+
 
 		[Title("Configuration")]
 
@@ -38,29 +44,39 @@ namespace CommonUtils
 		[SerializeField]
 		private AnimationCurve animCurve = AnimationCurve.Linear(0.0f, 0.0f, 1.0f, 1.0f);
 
+		[Title("Events")]
+
+		[Tooltip("Invoked on start of reset animation.")]
+		[SerializeField]
+		public UnityEvent OnResetStart = new UnityEvent();
+
+		[Tooltip("Invoked on end of reset animation.")]
+		[SerializeField]
+		public UnityEvent OnResetEnd = new UnityEvent();
+
 		#endregion
 
 		#region Member Declarations
 
 		/// <summary>
-		/// Original position of transform.
+		/// Original position of <see cref="Transform"/>.
 		/// </summary>
-		private Vector3 originalPosition { get; set; }
+		public Vector3 originalPosition { get; set; }
 
 		/// <summary>
-		/// Original rotation of transform.
+		/// Original rotation of <see cref="Transform"/>.
 		/// </summary>
-		private Quaternion originalRotation { get; set; }
+		public Quaternion originalRotation { get; set; }
 
 		/// <summary>
-		/// Original scale of transform.
+		/// Original scale of <see cref="Transform"/>.
 		/// </summary>
-		private Vector3 originalScale { get; set; }
+		public Vector3 originalScale { get; set; }
 
 		/// <summary>
-		/// Whether the transform is currently being animated.
+		/// Whether the <see cref="Transform"/> is currently being animated.
 		/// </summary>
-		private bool isAnimating { get; set; } = false;
+		public bool isAnimating { get; set; } = false;
 
 		#endregion
 
@@ -82,8 +98,9 @@ namespace CommonUtils
 		#region Public Functions
 
 		/// <summary>
-		/// Resets the transform's position, rotation, and scale to its original state.
+		/// Resets the <see cref="Transform"/>'s position, rotation, and scale to its original state.
 		/// </summary>
+		[Button(name: "Test Reset Transform")]
 		public void ResetTransform()
 		{
 			StartCoroutine(ResetAnimation());
@@ -91,8 +108,9 @@ namespace CommonUtils
 
 		/// <summary>
 		/// Updates the original position, rotation, and scale from the current transform.
-		/// The transform will reset to this position.
+		/// The <see cref="Transform"/> will reset to this position.
 		/// </summary>
+		[Button(name: "Test Update Original Transform")]
 		public void UpdateOriginalTransform()
 		{
 			originalPosition = transform.localPosition;
@@ -104,16 +122,26 @@ namespace CommonUtils
 
 		#region Animation Coroutine
 
+		/// <summary>
+		/// Reset animation coroutine.
+		/// </summary>
 		public IEnumerator ResetAnimation()
 		{
 			Vector3 startPosition = transform.localPosition;
 			Quaternion startRotation = transform.localRotation;
 			Vector3 startScale = transform.localScale;
 
+			// Invoke start event
+			OnResetStart.Invoke();
+
 			// Check if transform is already original
 			if (startPosition == originalPosition && startRotation == originalRotation && startScale == originalScale)
 			{
 				Debug.Log($"[{name}] Transform is already at its original position. Reset animation will end.");
+
+				// Invoke end event
+				OnResetEnd.Invoke();
+
 				yield break;
 			}
 
@@ -144,6 +172,9 @@ namespace CommonUtils
 
 			// Set flag to complete
 			isAnimating = false;
+
+			// Invoke end event
+			OnResetEnd.Invoke();
 		}
 
 		#endregion

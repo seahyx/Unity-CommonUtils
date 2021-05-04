@@ -12,10 +12,10 @@ using Microsoft.MixedReality.Toolkit.UI.BoundsControl;
 using Photon.Pun;
 using UnityEngine;
 
-namespace GEM.Networking
+namespace CommonUtils.Networking
 {
 	/// <summary>
-	/// Network takeover for object manipulator components.
+	/// Easy photon takeover utility for <see cref="ObjectManipulator"/>. Will automatically add itself into <see cref="ObjectManipulator"/> events and allow players to takeover and move objects.
 	/// </summary>
 	public class PhotonTakeover : MonoBehaviour
 	{
@@ -30,6 +30,8 @@ namespace GEM.Networking
 		private BoundsControl boundsControl;
 
 		#endregion
+
+		#region MonoBehaviour
 
 		public void Start()
 		{
@@ -50,6 +52,9 @@ namespace GEM.Networking
 				boundsControl.TranslateStarted.AddListener(TakeOwnership);
 			}
 		}
+
+		#endregion
+
 		private void TakeOwnership()
 		{
 			Debug.Log($"[{name}] Photon takeover, requesting ownership for: {objManipulator.HostTransform.name}");
