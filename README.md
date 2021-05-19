@@ -44,6 +44,10 @@ Most scripts are plug and play, just drop them in and they should work. ;-)
 
 	- Save/loading system.
 
+- ### Shaders
+
+  - Cool shader effects, and some example models to test them on.
+
 ## Dependencies
 
 Some scripts require Odin Serializer for the inspector tools.
