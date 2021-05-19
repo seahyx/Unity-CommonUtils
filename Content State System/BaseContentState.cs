@@ -15,7 +15,7 @@ namespace CommonUtils.ContentState
 {
 
 	/// <summary>
-	/// Base class for a section of content.
+	/// Base class for a state of the content.
 	/// </summary>
 	public class BaseContentState : MonoBehaviour
 	{

@@ -9,6 +9,7 @@
 
 using CommonUtils.Networking;
 using Photon.Pun;
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -133,7 +134,7 @@ namespace CommonUtils.ContentState
 			if (reset)
 				Reset(defaultContentStateIndex);
 			else
-				SetState(defaultContentStateIndex);
+				SetStateSequential(defaultContentStateIndex);
 		}
 
 		/// <summary>
@@ -162,7 +163,7 @@ namespace CommonUtils.ContentState
 			{
 				// Remove current content state
 				stack.Pop();
-
+				
 				// Transition in the new state
 				stack.Peek().TransitionIn();
 			});
