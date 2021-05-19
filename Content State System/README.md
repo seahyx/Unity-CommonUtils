@@ -21,7 +21,7 @@
 
 1. Create a material using the `PolygonExplode` shader.
 2. Create a 3d model in the scene and apply the material (Icosphere model example is provided in ..\Shaders\ExplodePolygon folder).
-3. Add the `ExplodingPolygonController` on the object.
+3. Add `ExplodingPolygonController` on the object.
 4. Add `ExplodePolygonContentState` to all content states that you wish to animate the transition with.
 5. Assign the controller field in all `ExplodePolygonContentState` with the  `ExplodingPolygonController` you had created.
 6. Add all the content states into the `ContentStateManager`'s content state list.
