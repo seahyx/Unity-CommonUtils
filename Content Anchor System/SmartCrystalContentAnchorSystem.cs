@@ -14,73 +14,97 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 	/// Content Anchor System that uses a grabbable "Crystal" to achieve placement
 	/// with a plane representing the content as a guide.
 	/// 
-	/// This is an altered version of the CrystalContentAnchorSystem. It attempts to align the content anchor to the floor by doing a raycast to the spatial mesh. The height of the content anchor will be set to another GameObject as reference.
+	/// This is an altered version of the <see cref="CrystalContentAnchorSystem"/>. It attempts to align the content anchor to the floor by doing a raycast to the spatial mesh. The height of the content anchor will be set to a <see cref="UIReference"/>'s <see cref="GameObject"/> as reference.
 	/// </summary>
 	public class SmartCrystalContentAnchorSystem : ContentAnchorSystem
 	{
-		/*
-		 * Constants
-		 */
+		#region Constants
+
 		/// <summary>
-		/// The minimum depth and width of the content planes
+		/// The minimum depth and width of the content planes.
 		/// </summary>
 		private const float MinContentDimension = 0.2f;
+
 		/// <summary>
-		/// The height of the alignment line
+		/// The height of the alignment line.
 		/// </summary>
 		private const float AlignmentLineDepth = 0.01f;
+
 		/// <summary>
-		/// The delay duration before the EnsureComponent is checked
+		/// The delay duration before the EnsureComponent is checked.
 		/// </summary>
 		private const int DelayedEnsureComponentTime = 250;
 
-		/*
-		 * Serializable
-		 */
+		#endregion
+
+		#region Serialization
+
 		[Title("Configuration - Content Plane")]
+
 		[Tooltip("The thickness of the Alignment Line.")]
 		[SerializeField]
 		[Range(MinContentDimension, 10.0f)]
 		[OnValueChanged("onContentWidthAdjustedInspector")]
 		private float contentWidth = 1.0f;
+
 		[Tooltip("The thickness of the Alignment Line (in Y and Z axes). Try not to make it too thick.")]
 		[SerializeField]
 		[Range(0, 10)]
 		[OnValueChanged("onContentWidthAdjustedInspector")]
 		private float contentThickness = 0.01f;
 
+		[Tooltip("Anchor offset from the handle.")]
+		[OnValueChanged("onAnchorOffsetAdjustedInspector")]
+		[SerializeField]
+		private Vector3 anchorOffset = Vector3.zero;
+
+		[Tooltip("Anchor border size.")]
+		[OnValueChanged("onBorderSizeAdjustedInspector")]
+		[SerializeField]
+		private Vector3 borderSize = Vector3.one;
+
 
 		[Title("Configuration - Animation")]
+
 		[Tooltip("The duration that should be taken for the interactive elements (grab handle, tooltip and control panel) to grow.")]
 		[SerializeField]
 		[Range(0, 10)]
 		private float interactiveAnimationDuration = 0.5f;
+
 		[Tooltip("The animation curve for the interactive elements (grab handle, tooltip and control panel).")]
 		[SerializeField]
 		private AnimationCurve interactiveAnimationCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+
 		[Tooltip("The duration that should be taken for the alignment line to extend.")]
 		[SerializeField]
 		[Range(0, 10)]
 		private float alignmentLineAnimationDuration = 0.5f;
+
 		[Tooltip("The animation curve for the alignment line.")]
 		[SerializeField]
 		private AnimationCurve alignmentLineAnimationCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
+
 		[Tooltip("The duration that should be taken for the border to extend.")]
 		[SerializeField]
 		[Range(0, 10)]
 		private float borderAnimationDuration = 0.5f;
+
 		[Tooltip("The animation curve for the border.")]
 		[SerializeField]
 		private AnimationCurve borderAnimationCurve = AnimationCurve.EaseInOut(0.0f, 0.0f, 1.0f, 1.0f);
 
+
 		[Title("Configuration - Anchoring")]
+
 		[Tooltip("Maximum raycast length.")]
 		[SerializeField]
 		[Range(0, 10)]
 		private float maxRaycastLength = 3.0f;
+
 		[Tooltip("Raycast layer mask.")]
 		[SerializeField]
 		private LayerMask layerMask;
+
 		[Tooltip("Fallback anchor height. This is the assumed height of the grab handle from the floor if raycast does not succeed.")]
 		[SerializeField]
 		[Range(0, 5)]
@@ -88,57 +112,98 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 
 
 		[Title("References")]
+
 		[Tooltip("Reference to the object that the user is supposed to grab to move the object around.")]
 		[SerializeField]
 		[SceneObjectsOnly]
 		private GameObject grabHandle;
+
 		[Tooltip("Reference to the blue line that indicates the alignmentof the content.")]
 		[SerializeField]
 		[SceneObjectsOnly]
 		private GameObject alignmentLine;
+
 		[Tooltip("Reference to the 'Grab Me' tooltip that directs the user what to do.")]
 		[SerializeField]
 		[SceneObjectsOnly]
 		private GameObject grabTooltip;
+
 		[Tooltip("Reference to the control panel that holds the buttons for users to confirm the placement.")]
 		[SerializeField]
 		[SceneObjectsOnly]
 		private GameObject controlPanel;
-		[Tooltip("Reference to the object border.")]
+
+		[Tooltip("Reference to the object border offset, which should be the parent of the border outline.")]
 		[SerializeField]
 		[SceneObjectsOnly]
-		private GameObject border;
+		private GameObject borderOffset;
+
+		[Tooltip("Reference to the object border outline.")]
+		[SerializeField]
+		[SceneObjectsOnly]
+		private GameObject borderOutline;
+
 		[Tooltip("UI height reference. This GameObject will preserve the height of the anchor that the user has set.")]
 		[SerializeField]
 		private UIReference UIHeightRef;
 
-		/*
-		 * Members
-		 */
-		private Vector3 handleMaxSize;				// Keeps track of the handle's size
-		private Vector3 tooltipMaxSize;				// Keeps track of the tooltip's size
-		private Vector3 controlPanelMaxSize;		// Keeps track of the control panel's size
-		private float borderMaxHeight;				// Keeps track of the border's Y scale
-		private bool firstGrabCompleted = false;    // Check if a full grab (start + end) has been done at least once
+		#endregion
 
-		/*
-		 * Components
-		 */
+		#region Member Declarations
+
+		/// <summary>
+		/// Keeps track of the handle's size.
+		/// </summary>
+		private Vector3 handleMaxSize;
+
+		/// <summary>
+		/// Keeps track of the tooltip's size.
+		/// </summary>
+		private Vector3 tooltipMaxSize;
+
+		/// <summary>
+		/// Keeps track of the control panel's size.
+		/// </summary>
+		private Vector3 controlPanelMaxSize;
+
+		/// <summary>
+		/// Keeps track of the border's Y scale.
+		/// </summary>
+		private float borderMaxHeight;
+
+		/// <summary>
+		/// Whether a full grab (start + end) has been done at least once.
+		/// </summary>
+		private bool firstGrabCompleted = false;
+
+
+		/// <summary>
+		/// <see cref="BoundsControl"/> reference.
+		/// </summary>
 		public BoundsControl BoundsControl { get; private set; }
+
+		/// <summary>
+		/// <see cref="ObjectManipulator"/> reference.
+		/// </summary>
 		public ObjectManipulator ObjectManipulator { get; private set; }
+
+		/// <summary>
+		/// <see cref="RadialView"/> reference.
+		/// </summary>
 		public RadialView RadialView { get; private set; }
 
-		/*
-		 * Properties
-		 */
+
 		/// <summary>
-		/// Whether or not the anchoring is in progress
+		/// Whether or not the anchoring is in progress.
 		/// </summary>
 		public override bool IsAnchoring => gameObject.activeSelf;
 
+		#endregion
+
 		#region MonoBehaviour
+
 		/// <summary>
-		/// Resource Initialization
+		/// Resource initialization.
 		/// </summary>
 		private void Awake()
 		{
@@ -152,7 +217,7 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			DebugUtility.AssertNotNull(this, alignmentLine);
 			DebugUtility.AssertNotNull(this, grabTooltip);
 			DebugUtility.AssertNotNull(this, controlPanel);
-			DebugUtility.AssertNotNull(this, border);
+			DebugUtility.AssertNotNull(this, borderOffset);
 
 			// Disable scale handles on start
 			BoundsControl.ScaleHandlesConfig.ShowScaleHandles = false;
@@ -161,11 +226,11 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			handleMaxSize = grabHandle.transform.localScale;
 			tooltipMaxSize = grabTooltip.transform.localScale;
 			controlPanelMaxSize = controlPanel.transform.localScale;
-			borderMaxHeight = border.transform.localScale.y;
+			borderMaxHeight = borderOffset.transform.localScale.y;
 		}
 
 		/// <summary>
-		/// Initialization
+		/// Initialization.
 		/// </summary>
 		protected override void Start()
 		{
@@ -216,19 +281,21 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 		}
 
 		/// <summary>
-		/// Update the border position
+		/// Update the border position.
 		/// </summary>
 		private void Update()
 		{
 			// Make sure it is after first grab
 			if (firstGrabCompleted)
 			{
-				border.transform.position = GetFloorAnchorPosition();
+				borderOffset.transform.position = GetFloorAnchorPosition();
 			}
 		}
+
 		#endregion
 
 		#region Content Anchor System
+
 		/// <summary>
 		/// Called when the anchoring process is started. Use this function to set up the anchoring process
 		/// </summary>
@@ -242,7 +309,7 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			grabHandle.SetActive(false);
 			grabTooltip.SetActive(false);
 			controlPanel.SetActive(false);
-			border.SetActive(false);
+			borderOffset.SetActive(false);
 
 			// Deactivate rotational anchors at the start
 			BoundsControl.enabled = false;
@@ -267,36 +334,66 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 		protected override void onAnchoringEnded()
 		{
 			// Initialize anchor world position
-			Vector3 finalAnchorPosition = GetFloorAnchorPosition(true);
+			borderOffset.transform.position = GetFloorAnchorPosition(true);
 
 			// Set the UI height reference
 			if (UIHeightRef)
 			{
 				UIHeightRef.transform.position = grabHandle.transform.position;
 				UIHeightRef.transform.rotation = grabHandle.transform.rotation;
+
+				UIHeightRef.SetCounterPosition(borderOffset.transform.position);
 			}
 
-			UIHeightRef.counterPosition = finalAnchorPosition;
-
-			UIHeightRef.SendPositionUpdate();
+			// We want the position that is the center of the border hologram, which we can get from the position of the border offset child.
+			Vector3 finalAnchorPosition = borderOffset.transform.GetChild(0).position;
 
 			SetAnchor(transform.parent.InverseTransformVector(finalAnchorPosition), transform.localRotation);
 		}
+
 		#endregion
 
 		#region Inspector Functions
+
 		/// <summary>
 		/// Function that will be automatically adjusts the size of the content plane whent he value is adjusted in 
 		/// the inspector.
 		/// </summary>
 		private void onContentWidthAdjustedInspector()
 		{
+			if (alignmentLine == null)
+				return;
+
 			// Adjust alignment line
 			alignmentLine.transform.localScale = new Vector3(contentWidth, contentThickness, AlignmentLineDepth);
 		}
+
+		/// <summary>
+		/// Inspector function to adjust the offset of the border outline when the anchor offset is changed.
+		/// </summary>
+		private void onAnchorOffsetAdjustedInspector()
+		{
+			if (borderOutline == null)
+				return;
+
+			borderOutline.transform.localPosition = anchorOffset;
+		}
+
+		/// <summary>
+		/// Inspector function to adjust the scale of the border outline when the border size is changed.
+		/// </summary>
+		private void onBorderSizeAdjustedInspector()
+		{
+			if (borderOutline == null)
+				return;
+
+			borderOutline.transform.localScale = borderSize;
+		}
+
 		#endregion
 
 		#region Animation Functions
+
 		/// <summary>
 		/// Function for animating the crystal handle appearing
 		/// </summary>
@@ -374,9 +471,8 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			alignmentLine.transform.localScale = new Vector3(0.0f, contentThickness, contentThickness);
 			alignmentLine.SetActive(true);
 
-			// Hide the grab tooltip too and start the border animation
+			// Hide the grab tooltip too
 			_ = playHideTooltipAnimation();
-			_ = playBorderAnimation();
 
 			// Begin extending the alignment line
 			float timer = 0.0f;
@@ -400,46 +496,6 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 		}
 
 		/// <summary>
-		/// Asynchronous function for handling the border opening animation
-		/// </summary>
-		/// <returns>Asynchronous Task Handler</returns>
-		private async Task playBorderAnimation()
-		{
-			// Set initial states of objects
-			border.SetActive(true);
-			border.transform.localScale = new Vector3(
-				border.transform.localScale.x,
-				0.0f,
-				border.transform.localScale.z);
-
-			// Begin animation
-			float timer = 0.0f;
-			while (timer < alignmentLineAnimationDuration)
-			{
-				// Increase the timer for tracking the animation
-				timer += Time.deltaTime;
-
-				// Calculate value from animation curve
-				float t = borderAnimationCurve.Evaluate(timer / borderAnimationDuration);
-
-				// Scale the line
-				border.transform.localScale = new Vector3(
-				border.transform.localScale.x,
-				Mathf.Lerp(0.0f, borderMaxHeight, t),
-				border.transform.localScale.z);
-
-				// Wait for next frame
-				await Task.Yield();
-			}
-
-			// Snap to final values
-			border.transform.localScale = new Vector3(
-				border.transform.localScale.x,
-				borderMaxHeight,
-				border.transform.localScale.z);
-		}
-
-		/// <summary>
 		/// Function for animating the control panel animation
 		/// </summary>
 		/// <returns>Asynchronous Task Handler</returns>
@@ -448,6 +504,9 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			// Set initial states of objects
 			controlPanel.SetActive(true);
 			controlPanel.transform.localScale = Vector3.zero;
+
+			// Start the border animation
+			_ = playBorderAnimation();
 
 			// Begin growing the control panel
 			float timer = 0.0f;
@@ -468,6 +527,46 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 
 			// Snap to final values
 			controlPanel.transform.localScale = controlPanelMaxSize;
+		}
+
+		/// <summary>
+		/// Asynchronous function for handling the border opening animation
+		/// </summary>
+		/// <returns>Asynchronous Task Handler</returns>
+		private async Task playBorderAnimation()
+		{
+			// Set initial states of objects
+			borderOffset.SetActive(true);
+			borderOffset.transform.localScale = new Vector3(
+				borderOffset.transform.localScale.x,
+				0.0f,
+				borderOffset.transform.localScale.z);
+
+			// Begin animation
+			float timer = 0.0f;
+			while (timer < alignmentLineAnimationDuration)
+			{
+				// Increase the timer for tracking the animation
+				timer += Time.deltaTime;
+
+				// Calculate value from animation curve
+				float t = borderAnimationCurve.Evaluate(timer / borderAnimationDuration);
+
+				// Scale the line
+				borderOffset.transform.localScale = new Vector3(
+				borderOffset.transform.localScale.x,
+				Mathf.Lerp(0.0f, borderMaxHeight, t),
+				borderOffset.transform.localScale.z);
+
+				// Wait for next frame
+				await Task.Yield();
+			}
+
+			// Snap to final values
+			borderOffset.transform.localScale = new Vector3(
+				borderOffset.transform.localScale.x,
+				borderMaxHeight,
+				borderOffset.transform.localScale.z);
 		}
 
 		/// <summary>
@@ -512,9 +611,11 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			// Proceed
 			StopAnchoring();
 		}
+
 		#endregion
 
-		#region Unity Event Functions
+		#region Public Functions
+
 		/// <summary>
 		/// Function to be assigned to the confirm placement button
 		/// </summary>
@@ -530,23 +631,31 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 		{
 			onAnchoringStarted();
 		}
+
 		#endregion
 
 		#region Helper Functions
+
 		/// <summary>
-		/// Gets the height of the floor below the player, and subtract it from the grab handle's world position.<br></br>
-		/// If there is no floor detected below player, it will try to detect a floor below the crystal anchor.<br></br>
-		/// If there is no floor detected below the crystal anchor, it will use a fallback height position calculated with the crystal as anchor.
+		/// <para>
+		/// Gets the height of the floor below the player, and subtract it from the <see cref="borderOffset"/>'s world position.
+		/// </para>
+		/// <para>
+		/// If there is no floor detected below player, it will try to detect a floor below the crystal anchor.
+		/// </para>
+		/// <para>
+		/// If there is no floor detected below the crystal anchor, it will use <see cref="fallbackHeight"/> with the crystal as anchor.
+		/// </para>
 		/// </summary>
-		/// <param name="isLogging"></param>
-		/// <returns></returns>
+		/// <param name="isLogging">Whether to log results into the console.</param>
+		/// <returns>World position of the floor position beneath the crystal.</returns>
 		private Vector3 GetFloorAnchorPosition(bool isLogging = false)
 		{
 			// Initialize anchor world position
 			Vector3 anchorPosition = new Vector3(
-					grabHandle.transform.position.x,
+					borderOffset.transform.position.x,
 					transform.position.y - fallbackHeight,
-					grabHandle.transform.position.z);
+					borderOffset.transform.position.z);
 
 			// Cast a ray from the main camera downwards to try and detect the floor.
 			RaycastHit hit;
@@ -554,9 +663,9 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 			{
 				// Set world anchor to the floor
 				anchorPosition = new Vector3(
-					grabHandle.transform.position.x,
+					borderOffset.transform.position.x,
 					hit.point.y,
-					grabHandle.transform.position.z);
+					borderOffset.transform.position.z);
 
 				if (isLogging)
 					Debug.Log($"[{name}] Has detected a raycast hit on the floor from the main camera with coordinates: {hit.point}");
@@ -570,9 +679,9 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 				{
 					// Set world anchor to the floor
 					anchorPosition = new Vector3(
-						grabHandle.transform.position.x,
+						borderOffset.transform.position.x,
 						hit.point.y,
-						grabHandle.transform.position.z);
+						borderOffset.transform.position.z);
 
 					if (isLogging)
 						Debug.Log($"[{name}] Has detected a raycast hit on the floor from the anchor crystal with coordinates: {hit.point}");
@@ -588,6 +697,5 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 		}
 
 		#endregion
-
 	}
 }
