@@ -10,6 +10,7 @@
 ### Notes:
 
 - Can be used with `ExplodingPolygonController` in "..\Content State System" to facilitate animating the animation progress via code.
+- Is used by `ExplodePolygonContentState` in "..\Content State System" to animate content state transitions.
 - Iridescence and environment colouring effects only apply on the wire portion of the shader.
 
 ### Dependencies:
