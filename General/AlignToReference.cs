@@ -12,7 +12,7 @@ using UnityEngine;
 namespace CommonUtils
 {
 	/// <summary>
-	/// Aligns the <see cref="GameObject"/> this script is attached to, to the height of a reference <see cref="GameObject"/> on <see cref="OnEnable"/>.
+	/// Aligns the GameObject this script is attached to, to the height of a reference GameObject on OnEnable.
 	/// </summary>
 	public class AlignToReference : MonoBehaviour
 	{

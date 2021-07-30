@@ -27,8 +27,7 @@ namespace CommonUtils
 		private Vector3 defaultButtonSize = new Vector3(0.032f, 0.032f, 0.016f);
 
 		[Tooltip("Percentage of the width or height for the margins.")]
-		[Range(0.0f, 1.0f)]
-		[SerializeField]
+		[SerializeField, Range(0.0f, 1.0f)]
 		private float marginRatio = 0.05f;
 		
 		[Tooltip("List of Transforms to be scaled. E.g. Backplate, Frontplate")]

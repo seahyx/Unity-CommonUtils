@@ -27,7 +27,7 @@ namespace CommonUtils
 
 		// Property References
 
-		private SerializedProperty buttonScaleField { get; set; }
+		private SerializedProperty buttonScaleProp { get; set; }
 
 		#endregion
 
@@ -36,7 +36,7 @@ namespace CommonUtils
 		void OnEnable()
 		{
 			CastTargets();
-			buttonScaleField = serializedObject.FindProperty("_buttonScale");
+			buttonScaleProp = serializedObject.FindProperty("_buttonScale");
 		}
 
 		#endregion
@@ -74,7 +74,7 @@ namespace CommonUtils
 
 			if (EditorGUI.EndChangeCheck())
 			{
-				buttonScaleField.vector3Value = buttonScale;
+				buttonScaleProp.vector3Value = buttonScale;
 				serializedObject.ApplyModifiedProperties();
 
 				foreach (ButtonSizeConfig bConfig in buttonConfigs)

@@ -8,6 +8,7 @@
  */
 
 using Sirenix.OdinInspector;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -21,11 +22,24 @@ namespace CommonUtils
 	/// </summary>
 	public class TransformReset : MonoBehaviour
 	{
+		#region Type Definitions
+
+		[Flags]
+		public enum TransformFlags : short
+		{
+			None = 0,
+			Position = 1,
+			Rotation = 2,
+			Scale = 4,
+			All = 7
+		}
+
+		#endregion
+
 		#region Serialization
 
 		[InfoBox("Saves the target's original position, rotation, and scale on Awake. When ResetTransform() is called, reset animation will move the target back to the original position, rotation, and scale.\n\n" +
 			"Leave target empty to reference the transform on this GameObject.")]
-
 
 		[Title("Configuration")]
 
@@ -100,10 +114,11 @@ namespace CommonUtils
 		/// <summary>
 		/// Resets the <see cref="Transform"/>'s position, rotation, and scale to its original state.
 		/// </summary>
+		/// <param name="tflags">Flags for which part of the transform should be reset.</param>
 		[Button(name: "Test Reset Transform")]
-		public void ResetTransform()
+		public void ResetTransform(TransformFlags tflags = TransformFlags.All)
 		{
-			StartCoroutine(ResetAnimation());
+			StartCoroutine(ResetAnimation(tflags));
 		}
 
 		/// <summary>
@@ -118,6 +133,23 @@ namespace CommonUtils
 			originalScale = transform.localScale;
 		}
 
+		/// <summary>
+		/// Stop all animation coroutines if any. If there is an animation running, invoke the reset end event.
+		/// </summary>
+		public void StopAllAnimations()
+		{
+			if (isAnimating)
+			{
+				StopAllCoroutines();
+
+				// Set flag to complete
+				isAnimating = false;
+
+				// Invoke end event
+				OnResetEnd.Invoke();
+			}
+		}
+
 		#endregion
 
 		#region Animation Coroutine
@@ -125,7 +157,7 @@ namespace CommonUtils
 		/// <summary>
 		/// Reset animation coroutine.
 		/// </summary>
-		public IEnumerator ResetAnimation()
+		public IEnumerator ResetAnimation(TransformFlags tflags)
 		{
 			Vector3 startPosition = transform.localPosition;
 			Quaternion startRotation = transform.localRotation;
@@ -134,8 +166,18 @@ namespace CommonUtils
 			// Invoke start event
 			OnResetStart.Invoke();
 
+			if (tflags == TransformFlags.None)
+			{
+				// Invoke end event
+				OnResetEnd.Invoke();
+
+				yield break;
+			}
+
 			// Check if transform is already original
-			if (startPosition == originalPosition && startRotation == originalRotation && startScale == originalScale)
+			if (!(tflags.HasFlag(TransformFlags.Position) && startPosition != originalPosition) &&
+				!(tflags.HasFlag(TransformFlags.Rotation) && startRotation != originalRotation) &&
+				!(tflags.HasFlag(TransformFlags.Scale) && startScale != originalScale))
 			{
 				Debug.Log($"[{name}] Transform is already at its original position. Reset animation will end.");
 
@@ -154,9 +196,14 @@ namespace CommonUtils
 				float eval = animCurve.Evaluate(elapsedTime / animDuration);
 
 				// Set transforms
-				transform.localPosition = Vector3.Lerp(startPosition, originalPosition, eval);
-				transform.localRotation = Quaternion.Slerp(startRotation, originalRotation, eval);
-				transform.localScale = Vector3.Lerp(startScale, originalScale, eval);
+				if (tflags.HasFlag(TransformFlags.Position))
+					transform.localPosition = Vector3.Lerp(startPosition, originalPosition, eval);
+
+				if (tflags.HasFlag(TransformFlags.Rotation))
+					transform.localRotation = Quaternion.Slerp(startRotation, originalRotation, eval);
+
+				if (tflags.HasFlag(TransformFlags.Scale))
+					transform.localScale = Vector3.Lerp(startScale, originalScale, eval);
 
 				// Elapse time
 				elapsedTime += Time.deltaTime;
@@ -166,9 +213,14 @@ namespace CommonUtils
 			}
 
 			// Snap transforms when animation ends
-			transform.localPosition = originalPosition;
-			transform.localRotation = originalRotation;
-			transform.localScale = originalScale;
+			if (tflags.HasFlag(TransformFlags.Position))
+				transform.localPosition = originalPosition;
+
+			if (tflags.HasFlag(TransformFlags.Rotation))
+				transform.localRotation = originalRotation;
+
+			if (tflags.HasFlag(TransformFlags.Scale))
+				transform.localScale = originalScale;
 
 			// Set flag to complete
 			isAnimating = false;

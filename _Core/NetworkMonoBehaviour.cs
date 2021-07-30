@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-namespace CommonUtils.Core.Networking
+namespace CommonUtils.Networking
 {
 	/// <summary>
 	/// <para
@@ -41,9 +41,29 @@ namespace CommonUtils.Core.Networking
 		#region Member Declarations
 
 		/// <summary>
-		/// <see cref="PhotonView"/> reference.
+		/// Field for <see cref="PhotonView"/>.
 		/// </summary>
-		protected PhotonView photonView { get; set; }
+		private PhotonView _photonView;
+
+		/// <summary>
+		/// <see cref="Photon.Pun.PhotonView"/> reference.
+		/// </summary>
+		public PhotonView PhotonView
+		{
+			get
+			{
+				// Check if null
+				if (!_photonView)
+				{
+					_photonView = PhotonView.Get(this);
+				}
+				return _photonView;
+			}
+			protected set
+			{
+				_photonView = value;
+			}
+		}
 
 		/// <summary>
 		/// Character that divides a room property string key into the <see cref="NetworkName">network name</see> and property name.
@@ -53,7 +73,12 @@ namespace CommonUtils.Core.Networking
 		/// <summary>
 		/// The unique network identifier of this <see cref="NetworkMonoBehaviour"/>.
 		/// </summary>
-		public string NetworkName => name + photonView.ViewID;
+		public string NetworkName => name + PhotonView.ViewID;
+
+		/// <summary>
+		/// Whether to delete room properties for this object in <see cref="OnDestroy"/>.
+		/// </summary>
+		public bool DeletePropertiesOnDestroy { get; set; } = true;
 
 		#endregion
 
@@ -64,9 +89,6 @@ namespace CommonUtils.Core.Networking
 		/// </summary>
 		protected virtual void Awake()
 		{
-			// Get PhotonView reference
-			photonView = gameObject.GetComponent<PhotonView>();
-
 			// Register network callbacks
 			PhotonNetwork.AddCallbackTarget(this);
 		}
@@ -78,6 +100,33 @@ namespace CommonUtils.Core.Networking
 		{
 			// Unregister network callbacks
 			PhotonNetwork.RemoveCallbackTarget(this);
+
+			// Check if we're in a room first
+			if (PhotonNetwork.InRoom && DeletePropertiesOnDestroy)
+			{
+				// List of properties to delete
+				List<string> properties = new List<string>();
+
+				// Clear room properties of this object's properties (if any)
+				foreach (DictionaryEntry property in PhotonNetwork.CurrentRoom.CustomProperties)
+				{
+					// Get the room prop key
+					string key = (string)property.Key;
+
+					// Split it between the network name of this object, and the property name
+					string[] splitKey = key.Split(SplitChar);
+
+					// Check if this property is for this object
+					if (splitKey[0] == NetworkName)
+					{
+						// Add to list of properties to delete
+						properties.Add(splitKey[1]);
+					}
+				}
+
+				// Send null update to these propeties to delete them
+				SendPropertiesUpdate(properties, null);
+			}
 		}
 
 		#endregion
@@ -103,19 +152,58 @@ namespace CommonUtils.Core.Networking
 				Hashtable newPropertyTable = new Hashtable();
 
 				// Each property key is the NetworkName + SplitChar + property name
-				newPropertyTable.Add(NetworkName + SplitChar + propertyName, value);
+				newPropertyTable.Add(GetPropertyKey(propertyName), value);
 
 				// Send update
 				PhotonNetwork.CurrentRoom.SetCustomProperties(newPropertyTable);
 			}
 		}
 
-		#endregion
-
-		#region IInRoomCallbacks
-
-		public virtual void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+		/// <summary>
+		/// Send multiple property updates to the network.
+		/// The array size of <paramref name="propertyNames"/> should match the array size of <paramref name="values"/>.
+		/// <para>
+		/// If there are less <paramref name="values"/> than there are <paramref name="propertyNames"/>, the remaining properties that do not have a corresponding value will be have <see langword="null"/> as the value instead.
+		/// </para>
+		/// Extra values will be ignored. Passing <see langword="null"/> to <paramref name="values"/> will set all the property values to null.
+		/// </summary>
+		/// <param name="propertyNames">Array of property names.</param>
+		/// <param name="values">Array of values corresponding to the <paramref name="propertyNames"/>.</param>
+		protected virtual void SendPropertiesUpdate(List<string> propertyNames, List<object> values)
 		{
+			if (PhotonNetwork.InRoom)
+			{
+				if (propertyNames == null || propertyNames.Count == 0)
+				{
+					Debug.LogWarning($"[{name}] propertyNames is empty or null, no room properties will be updated.");
+					return;
+				}
+
+				Hashtable newPropertyTable = new Hashtable();
+
+				for (int i = 0; i < propertyNames.Count; i++)
+				{
+					// If values is null or i is out of range of the values array, then value will be null
+					object value = values == null ? null : i < values.Count ? values[i] : null;
+
+					// Null values will remove the room property entry
+					newPropertyTable.Add(GetPropertyKey(propertyNames[i]), value);
+				}
+
+				// Send update
+				PhotonNetwork.CurrentRoom.SetCustomProperties(newPropertyTable);
+			}
+		}
+
+		/// <summary>
+		/// Parse the room property hashtable.
+		/// </summary>
+		/// <param name="propertiesThatChanged">Property hashtable.</param>
+		/// <returns>Whether there was any property updated.</returns>
+		protected virtual bool ParsePropertyTable(Hashtable propertiesThatChanged)
+		{
+			bool hasUpdate = false;
+
 			// Check through all update properties
 			foreach (DictionaryEntry property in propertiesThatChanged)
 			{
@@ -130,8 +218,29 @@ namespace CommonUtils.Core.Networking
 				{
 					// Receive update
 					OnReceivePropertyUpdate(splitKey[1], property.Value);
+
+					// Toggle flag
+					hasUpdate = true;
 				}
 			}
+
+			return hasUpdate;
+		}
+
+		/// <summary>
+		/// Convert a property name to a property key.
+		/// </summary>
+		/// <param name="propertyName"></param>
+		/// <returns></returns>
+		protected string GetPropertyKey(string propertyName) => NetworkName + SplitChar + propertyName;
+
+		#endregion
+
+		#region IInRoomCallbacks
+
+		public virtual void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+		{
+			ParsePropertyTable(propertiesThatChanged);
 		}
 
 		#region Unused Methods
@@ -167,7 +276,7 @@ namespace CommonUtils.Core.Networking
 		/// </summary>
 		public virtual void OnJoinedRoom()
 		{
-			OnRoomPropertiesUpdate(PhotonNetwork.CurrentRoom.CustomProperties);
+			ParsePropertyTable(PhotonNetwork.CurrentRoom.CustomProperties);
 		}
 
 		#region Unused Methods
