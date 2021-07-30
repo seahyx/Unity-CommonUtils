@@ -21,17 +21,13 @@ namespace CommonUtils
 	{
 		#region Serialization
 
-		[InfoBox("This thing make the model dance around elegantly even if you spam SetScale on this like a drunk madman on steroids.")]
+		[InfoBox("This thing makes the model dance around elegantly even if you spam SetScale on this like a drunk madman on steroids.")]
 
 		[Title("Configuration - General Settings")]
 
 		[Tooltip("Target Transform to scale. Leave empty to reference the Transform on this GameObject.")]
 		[SerializeField]
 		private Transform target;
-
-		[Tooltip("Starting scale.")]
-		[SerializeField]
-		private float originalScale = 1.0f;
 
 		[Title("Configuration - Animation")]
 
@@ -43,9 +39,12 @@ namespace CommonUtils
 
 		#region Member Declarations
 
+		[Title("Debug Values")]
+
 		/// <summary>
 		/// Currently running <see cref="AnimationCurve"/>.
 		/// </summary>
+		[ShowInInspector, ReadOnly]
 		private AnimationCurve currentAnimCurve { get; set; }
 
 		/// <summary>
@@ -61,11 +60,13 @@ namespace CommonUtils
 		/// <summary>
 		/// Flag for whether the animation is currently running.
 		/// </summary>
+		[ShowInInspector, ReadOnly]
 		private bool isAnimating { get; set; } = false;
 
 		/// <summary>
 		/// Final target scale for the animation.
 		/// </summary>
+		[ShowInInspector, ReadOnly]
 		private float finalScale { get; set; } = 1.0f;
 
 		#endregion
@@ -79,8 +80,6 @@ namespace CommonUtils
 		{
 			if (!target)
 				target = transform;
-
-			target.localScale = new Vector3(originalScale, originalScale, originalScale);
 		}
 
 		/// <summary>
@@ -127,7 +126,7 @@ namespace CommonUtils
 			if (!isAnimating)
 			{
 				// Not animating, so generate the anim curve and start
-				currentAnimCurve = GenerateAnimCurve(transform.localScale.x, scale);
+				currentAnimCurve = GenerateAnimCurve(target.localScale.x, scale);
 
 				// Reset timer
 				elapsedTime = 0.0f;

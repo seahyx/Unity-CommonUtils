@@ -11,7 +11,7 @@ Most scripts are plug and play, just drop them in and they should work. ;-)
 - ### _Core
 
   - Contains the base networking class that some network-enabled scripts will use.
-  - Includes `NetworkMonoBehaviour`, a useful modified version of the `MonoBehaviour` to make implementing synchronised networking features easy.
+	- Includes `NetworkMonoBehaviour`, a useful modified version of the `MonoBehaviour` to make implementing synchronised networking features easy.
 
 - ### Content Anchor System
 
@@ -19,34 +19,38 @@ Most scripts are plug and play, just drop them in and they should work. ;-)
 
 - ### Content State System
 
-  - A simple content state management system for scene-like transitions and flow. When you don't need something complex.
-  - Network-capable, easily extensible and customizable.
-  - Will require _Core scripts.
+	- A simple content state management system for scene-like transitions and flow. When you don't need something complex.
+	- Network-capable, easily extensible and customizable.
+	- Will require _Core scripts.
 
 - ### Debugging
 
-  - Various debugging tools.
+	- Various debugging tools.
 
 - ### General
 
-  - Various useful scripts to accomplish common tasks such as object scaling, transform resetting, etc.
+	- Various useful scripts to accomplish common tasks such as object scaling, transform resetting, etc.
 
 - ### MRTK Interactable Sprite Theme Engine
 
-  - A workaround interactable sprite theme engine for when you prefer to use sprite icons that can be changed using interactable profiles.
-  - As this is a workaround, there may be visual bugs.
+	- A workaround interactable sprite theme engine for when you prefer to use sprite icons that can be changed using interactable profiles.
+	- As this is a workaround, there may be visual bugs.
 
 - ### Networking
 
-  - Various useful scripts to accomplish common networking tasks.
+	- Various useful scripts to accomplish common networking tasks.
 
 - ### Pie Chart
 
-  - Simple pie chart generator.
+	- Simple pie chart generator.
 
 - ### Saving
 
-  - Save/loading system.
+	- Save/loading system.
+
+- ### Shaders
+
+  - Cool shader effects, and some example models to test them on.
 
 ## Dependencies
 
@@ -54,7 +58,7 @@ Some scripts require Odin Serializer for the inspector tools.
 
 Some scripts require Photon for networking capabilities.
 
-## Bug-reporting
+## Bug Reporting
 
 Please report any bugs to the issue tracker. Any code contributions will be welcome! :DD
 
