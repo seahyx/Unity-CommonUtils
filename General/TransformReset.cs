@@ -112,6 +112,22 @@ namespace CommonUtils
 		#region Public Functions
 
 		/// <summary>
+		/// Reset position and rotation only.
+		/// </summary>
+		public void ResetPosRot()
+		{
+			ResetTransform(TransformFlags.Position | TransformFlags.Rotation);
+		}
+
+		/// <summary>
+		/// Reset all transforms.
+		/// </summary>
+		public void ResetAll()
+		{
+			ResetTransform(TransformFlags.All);
+		}
+
+		/// <summary>
 		/// Resets the <see cref="Transform"/>'s position, rotation, and scale to its original state.
 		/// </summary>
 		/// <param name="tflags">Flags for which part of the transform should be reset.</param>
