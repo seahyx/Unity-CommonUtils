@@ -213,13 +213,13 @@ namespace CommonUtils
 
 				// Set transforms
 				if (tflags.HasFlag(TransformFlags.Position))
-					transform.localPosition = Vector3.Lerp(startPosition, originalPosition, eval);
+					transform.localPosition = Vector3.LerpUnclamped(startPosition, originalPosition, eval);
 
 				if (tflags.HasFlag(TransformFlags.Rotation))
-					transform.localRotation = Quaternion.Slerp(startRotation, originalRotation, eval);
+					transform.localRotation = Quaternion.SlerpUnclamped(startRotation, originalRotation, eval);
 
 				if (tflags.HasFlag(TransformFlags.Scale))
-					transform.localScale = Vector3.Lerp(startScale, originalScale, eval);
+					transform.localScale = Vector3.LerpUnclamped(startScale, originalScale, eval);
 
 				// Elapse time
 				elapsedTime += Time.deltaTime;
