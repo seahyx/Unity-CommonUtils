@@ -10,10 +10,8 @@
 using CommonUtils.Networking;
 using Photon.Pun;
 using Sirenix.OdinInspector;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 namespace CommonUtils.ContentState
 {
@@ -35,6 +33,10 @@ namespace CommonUtils.ContentState
 		[PropertyRange(0, "maxStateIndex")]
 		[SerializeField]
 		private int defaultContentStateIndex = 0;
+
+		[Tooltip("Disable initialization calls in OnEnable. Initialize must be called at once for ContentStateManager to work properly.")]
+		[SerializeField]
+		private bool manualInitialization = true;
 
 		#endregion
 
@@ -91,6 +93,16 @@ namespace CommonUtils.ContentState
 		/// </summary>
 		private void OnEnable()
 		{
+			if (!manualInitialization)
+				Initialize();
+		}
+
+		#endregion
+
+		#region Public Events
+
+		public void Initialize()
+		{
 			if (PhotonNetwork.InRoom)
 			{
 				// Check update from the current state of the room properties
@@ -107,10 +119,6 @@ namespace CommonUtils.ContentState
 				Reset(defaultContentStateIndex);
 			}
 		}
-
-		#endregion
-
-		#region Public Events
 
 		/// <summary>
 		/// Invokes sequential <see cref="SetState(int, bool, bool)"/> with <paramref name="index"/>.

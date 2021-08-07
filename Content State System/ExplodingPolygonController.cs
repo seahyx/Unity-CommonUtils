@@ -64,6 +64,7 @@ namespace CommonUtils.ContentState
 		private void Awake()
 		{
 			meshRenderer.sortingOrder = 99;
+			SetAnimationProgress(1.0f);
 		}
 
 		#endregion
