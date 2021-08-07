@@ -80,11 +80,19 @@ namespace CommonUtils
 				foreach (ButtonSizeConfig bConfig in buttonConfigs)
 				{
 					// Update transform list
-					if (bConfig.transformList.Count != 0)
+					if (bConfig.transformList.Count > 0)
 					{
 						SerializedObject transforms = new SerializedObject(bConfig.transformList.ToArray());
 						transforms.FindProperty("m_LocalScale").vector3Value = buttonScale;
 						transforms.ApplyModifiedProperties();
+					}
+
+					// Update sliced sprite renderer list
+					if (bConfig.slicedSprRList.Count > 0)
+					{
+						SerializedObject sprRenderers = new SerializedObject(bConfig.slicedSprRList.ToArray());
+						sprRenderers.FindProperty("m_Size").vector2Value = bConfig.RectWidthHeight;
+						sprRenderers.ApplyModifiedProperties();
 					}
 
 					// Update TMP rect transform width height

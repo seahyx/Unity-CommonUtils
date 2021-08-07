@@ -33,7 +33,11 @@ namespace CommonUtils
 		[Tooltip("List of Transforms to be scaled. E.g. Backplate, Frontplate")]
 		[SerializeField]
 		public List<Transform> transformList = new List<Transform>();
-		
+
+		[Tooltip("List of SLICED sprite renderers to be scaled. Adjusts the width and height values of the sprite renderer instead of scale.")]
+		[SerializeField]
+		public List<SpriteRenderer> slicedSprRList = new List<SpriteRenderer>();
+
 		[Tooltip("Button text Rect Transform reference.")]
 		[SerializeField]
 		public RectTransform textRT;
@@ -69,6 +73,9 @@ namespace CommonUtils
 				foreach (Transform t in transformList)
 					t.localScale = value;
 
+				foreach (SpriteRenderer spr in slicedSprRList)
+					spr.size = RectWidthHeight;
+
 				if (textRT)
 					textRT.sizeDelta = RectWidthHeight;
 
@@ -103,7 +110,7 @@ namespace CommonUtils
 		{
 			get
 			{
-				Vector3 newScale = defaultButtonSize;
+				Vector2 newScale = defaultButtonSize;
 				newScale.x *= ButtonScale.x;
 				newScale.y *= ButtonScale.y;
 				return newScale;
