@@ -63,6 +63,10 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 		[SerializeField]
 		private Vector3 borderSize = Vector3.one;
 
+		[Tooltip("Whether to use Border Offset's position rather than the outline position. Border Offset will only stay in the same position as the handle, while Border Outline takes into account the position of the guiding hologram from the handle.")]
+		[SerializeField]
+		private bool useBorderOffset = false;
+
 
 		[Title("Configuration - Animation")]
 
@@ -345,8 +349,17 @@ namespace HelloHolo.Framework.UI.ContentAnchorSystem
 				UIHeightRef.SetCounterPosition(borderOffset.transform.position);
 			}
 
-			// We want the position that is the center of the border hologram, which we can get from the position of the border offset child.
-			Vector3 finalAnchorPosition = borderOffset.transform.GetChild(0).position;
+			Vector3 finalAnchorPosition;
+			if (useBorderOffset)
+			{
+				// We want the X and Z position of the handle, but the Y position of the floor
+				finalAnchorPosition = borderOffset.transform.position;
+			}
+			else
+			{
+				// We want the position that is the center of the border hologram, which we can get from the position of the border offset child.
+				finalAnchorPosition = borderOffset.transform.GetChild(0).position;
+			}
 
 			SetAnchor(transform.parent.InverseTransformVector(finalAnchorPosition), transform.localRotation);
 		}
