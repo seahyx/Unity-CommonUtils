@@ -44,7 +44,6 @@ namespace CommonUtils.Networking
 		/// Field for <see cref="PhotonView"/>.
 		/// </summary>
 		private PhotonView _photonView;
-
 		/// <summary>
 		/// <see cref="Photon.Pun.PhotonView"/> reference.
 		/// </summary>
@@ -134,7 +133,7 @@ namespace CommonUtils.Networking
 		#region Network Functions
 
 		/// <summary>
-		/// Called when the <see cref="OnRoomPropertiesUpdate(Hashtable)">room properties update</see> has this object's <see cref="NetworkName">network name</see> as the key.
+		/// Override this function to handle updates when the <see cref="OnRoomPropertiesUpdate(Hashtable)">room properties update</see> has this object's <see cref="NetworkName">network name</see> as the key.
 		/// </summary>
 		/// <param name="value">Property value.</param>
 		protected virtual void OnReceivePropertyUpdate(string propertyName, object value) { }
