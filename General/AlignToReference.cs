@@ -8,6 +8,7 @@
  */
 
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 namespace CommonUtils
 {
