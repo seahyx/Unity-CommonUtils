@@ -59,16 +59,18 @@ namespace CommonUtils.Networking
 		{
 			Debug.Log($"[{name}] Photon takeover, requesting ownership for: {objManipulator.HostTransform.name}");
 
-			if (objManipulator.HostTransform.GetComponent<PhotonView>() != null)
-				objManipulator.HostTransform.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.LocalPlayer);
+			PhotonView photonView;
+			if (objManipulator.HostTransform.TryGetComponent(out photonView))
+				photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
 		}
 
 		private void TakeOwnership(ManipulationEventData arg0)
 		{
 			Debug.Log($"[{name}] Photon takeover, requesting ownership for: {objManipulator.HostTransform.name}");
 
-			if (objManipulator.HostTransform.GetComponent<PhotonView>() != null)
-				objManipulator.HostTransform.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.LocalPlayer);
+			PhotonView photonView;
+			if (objManipulator.HostTransform.TryGetComponent(out photonView))
+				photonView.TransferOwnership(PhotonNetwork.LocalPlayer);
 		}
 	}
 }
